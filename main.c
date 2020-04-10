@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 
-#include "monocypher.h"
+#include "monocypher-ed25519.h"
 
 typedef int8_t   i8;
 typedef uint8_t  u8;
