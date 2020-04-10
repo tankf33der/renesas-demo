@@ -787,7 +787,7 @@ static void scalarmult(u8 q[32], const u8 scalar[32], const u8 p[32],
     WIPE_BUFFER(x2);  WIPE_BUFFER(z2);  WIPE_BUFFER(t0);
     WIPE_BUFFER(x3);  WIPE_BUFFER(z3);  WIPE_BUFFER(t1);
 }
-
+/*
 void crypto_x25519(u8       raw_shared_secret[32],
                    const u8 your_secret_key  [32],
                    const u8 their_public_key [32])
@@ -805,6 +805,7 @@ void crypto_x25519_public_key(u8       public_key[32],
     static const u8 base_point[32] = {9};
     crypto_x25519(public_key, secret_key, base_point);
 }
+*/
 
 ///////////////////////////
 /// Arithmetic modulo L ///
