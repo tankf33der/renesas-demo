@@ -109,21 +109,14 @@ static void store64_le(u8 out[8], u64 in)
     store32_le(out + 4, in >> 32);
 }
 
-static void load32_le_buf (u32 *dst, const u8 *src, size_t size) {
-    FOR(i, 0, size) { dst[i] = load32_le(src + i*4); }
-}
 static void load64_le_buf (u64 *dst, const u8 *src, size_t size) {
     FOR(i, 0, size) { dst[i] = load64_le(src + i*8); }
-}
-static void store32_le_buf(u8 *dst, const u32 *src, size_t size) {
-    FOR(i, 0, size) { store32_le(dst + i*4, src[i]); }
 }
 static void store64_le_buf(u8 *dst, const u64 *src, size_t size) {
     FOR(i, 0, size) { store64_le(dst + i*8, src[i]); }
 }
 
 static u64 rotr64(u64 x, u64 n) { return (x >> n) ^ (x << (64 - n)); }
-static u32 rotl32(u32 x, u32 n) { return (x << n) ^ (x >> (32 - n)); }
 
 static int neq0(u64 diff)
 {   // constant time comparison to zero
@@ -443,8 +436,6 @@ static void fe_mul_small(fe h, const fe f, i32 g)
     i64 t8 = f[8] * (i64) g;  i64 t9 = f[9] * (i64) g;
     FE_CARRY;
 }
-static void fe_mul121666(fe h, const fe f) { fe_mul_small(h, f, 121666); }
-
 static void fe_mul(fe h, const fe f, const fe g)
 {
     // Everything is unrolled and put in temporary variables.
@@ -725,87 +716,6 @@ static int scalar_bit(const u8 s[32], int i)
     if (i < 0) { return 0; } // handle -1 for sliding windows
     return (s[i>>3] >> (i&7)) & 1;
 }
-
-///////////////
-/// X-25519 /// Taken from SUPERCOP's ref10 implementation.
-///////////////
-static void scalarmult(u8 q[32], const u8 scalar[32], const u8 p[32],
-                       size_t nb_bits)
-{
-    // computes the scalar product
-    fe x1;
-    fe_frombytes(x1, p);
-
-    // computes the actual scalar product (the result is in x2 and z2)
-    fe x2, z2, x3, z3, t0, t1;
-    // Montgomery ladder
-    // In projective coordinates, to avoid divisions: x = X / Z
-    // We don't care about the y coordinate, it's only 1 bit of information
-    fe_1(x2);        fe_0(z2); // "zero" point
-    fe_copy(x3, x1); fe_1(z3); // "one"  point
-    int swap = 0;
-    for (int pos = nb_bits-1; pos >= 0; --pos) {
-        // constant time conditional swap before ladder step
-        int b = scalar_bit(scalar, pos);
-        swap ^= b; // xor trick avoids swapping at the end of the loop
-        fe_cswap(x2, x3, swap);
-        fe_cswap(z2, z3, swap);
-        swap = b;  // anticipates one last swap after the loop
-
-        // Montgomery ladder step: replaces (P2, P3) by (P2*2, P2+P3)
-        // with differential addition
-        fe_sub(t0, x3, z3);
-        fe_sub(t1, x2, z2);
-        fe_add(x2, x2, z2);
-        fe_add(z2, x3, z3);
-        fe_mul(z3, t0, x2);
-        fe_mul(z2, z2, t1);
-        fe_sq (t0, t1    );
-        fe_sq (t1, x2    );
-        fe_add(x3, z3, z2);
-        fe_sub(z2, z3, z2);
-        fe_mul(x2, t1, t0);
-        fe_sub(t1, t1, t0);
-        fe_sq (z2, z2    );
-        fe_mul121666(z3, t1);
-        fe_sq (x3, x3    );
-        fe_add(t0, t0, z3);
-        fe_mul(z3, x1, z2);
-        fe_mul(z2, t1, t0);
-    }
-    // last swap is necessary to compensate for the xor trick
-    // Note: after this swap, P3 == P2 + P1.
-    fe_cswap(x2, x3, swap);
-    fe_cswap(z2, z3, swap);
-
-    // normalises the coordinates: x == X / Z
-    fe_invert(z2, z2);
-    fe_mul(x2, x2, z2);
-    fe_tobytes(q, x2);
-
-    WIPE_BUFFER(x1);
-    WIPE_BUFFER(x2);  WIPE_BUFFER(z2);  WIPE_BUFFER(t0);
-    WIPE_BUFFER(x3);  WIPE_BUFFER(z3);  WIPE_BUFFER(t1);
-}
-/*
-void crypto_x25519(u8       raw_shared_secret[32],
-                   const u8 your_secret_key  [32],
-                   const u8 their_public_key [32])
-{
-    // restrict the possible scalar values
-    u8 e[32];
-    trim_scalar(e, your_secret_key);
-    scalarmult(raw_shared_secret, e, their_public_key, 255);
-    WIPE_BUFFER(e);
-}
-
-void crypto_x25519_public_key(u8       public_key[32],
-                              const u8 secret_key[32])
-{
-    static const u8 base_point[32] = {9};
-    crypto_x25519(public_key, secret_key, base_point);
-}
-*/
 
 ///////////////////////////
 /// Arithmetic modulo L ///
