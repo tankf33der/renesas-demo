@@ -513,6 +513,7 @@ static void blake2b_compress(crypto_blake2b_ctx *ctx, int is_last_block)
         { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 },
     };
 
+
     // init work vector
     u64 v0 = ctx->hash[0];  u64 v8  = iv[0];
     u64 v1 = ctx->hash[1];  u64 v9  = iv[1];
@@ -551,10 +552,14 @@ static void blake2b_compress(crypto_blake2b_ctx *ctx, int is_last_block)
 #endif
 
     // update hash
-    ctx->hash[0] ^= v0 ^ v8;   ctx->hash[1] ^= v1 ^ v9;
-    ctx->hash[2] ^= v2 ^ v10;  ctx->hash[3] ^= v3 ^ v11;
-    ctx->hash[4] ^= v4 ^ v12;  ctx->hash[5] ^= v5 ^ v13;
-    ctx->hash[6] ^= v6 ^ v14;  ctx->hash[7] ^= v7 ^ v15;
+    //ctx->hash[0] ^= v0 ^ v8;
+    //ctx->hash[1] ^= v1 ^ v9;
+    //ctx->hash[2] ^= v2 ^ v10;
+    //ctx->hash[3] ^= v3 ^ v11;
+    //ctx->hash[4] ^= v4 ^ v12;
+    //ctx->hash[5] ^= v5 ^ v13;
+    //ctx->hash[6] ^= v6 ^ v14;
+    //ctx->hash[7] ^= v7 ^ v15;
 }
 
 static void blake2b_set_input(crypto_blake2b_ctx *ctx, u8 input, size_t index)
@@ -640,7 +645,7 @@ void crypto_blake2b_final(crypto_blake2b_ctx *ctx, u8 *hash)
         blake2b_set_input(ctx, 0, i);
     }
     blake2b_incr(ctx);        // update the input offset
-    //blake2b_compress(ctx, 1); // compress the last block
+    blake2b_compress(ctx, 1); // compress the last block
     size_t nb_words = ctx->hash_size >> 3;
     store64_le_buf(hash, ctx->hash, nb_words);
     FOR (i, nb_words << 3, ctx->hash_size) {
