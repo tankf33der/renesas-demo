@@ -1039,15 +1039,15 @@ void crypto_argon2i(u8   *hash,      u32 hash_size,
 // field element
 typedef i32 fe[10];
 
-static void fe_0(fe h) {           ZERO(h  , 10); }
-static void fe_1(fe h) { h[0] = 1; ZERO(h+1,  9); }
+void fe_0(fe h) {           ZERO(h  , 10); }
+void fe_1(fe h) { h[0] = 1; ZERO(h+1,  9); }
 
-static void fe_copy(fe h,const fe f           ){FOR(i,0,10) h[i] =  f[i];      }
-static void fe_neg (fe h,const fe f           ){FOR(i,0,10) h[i] = -f[i];      }
-static void fe_add (fe h,const fe f,const fe g){FOR(i,0,10) h[i] = f[i] + g[i];}
-static void fe_sub (fe h,const fe f,const fe g){FOR(i,0,10) h[i] = f[i] - g[i];}
+void fe_copy(fe h,const fe f           ){FOR(i,0,10) h[i] =  f[i];      }
+void fe_neg (fe h,const fe f           ){FOR(i,0,10) h[i] = -f[i];      }
+void fe_add (fe h,const fe f,const fe g){FOR(i,0,10) h[i] = f[i] + g[i];}
+void fe_sub (fe h,const fe f,const fe g){FOR(i,0,10) h[i] = f[i] - g[i];}
 
-static void fe_cswap(fe f, fe g, int b)
+void fe_cswap(fe f, fe g, int b)
 {
     i32 mask = -b; // -1 = 0xffffffff
     FOR (i, 0, 10) {
@@ -1057,7 +1057,7 @@ static void fe_cswap(fe f, fe g, int b)
     }
 }
 
-static void fe_ccopy(fe f, const fe g, int b)
+void fe_ccopy(fe f, const fe g, int b)
 {
     i32 mask = -b; // -1 = 0xffffffff
     FOR (i, 0, 10) {
@@ -1081,7 +1081,8 @@ static void fe_ccopy(fe f, const fe g, int b)
     h[0]=(i32)t0;  h[1]=(i32)t1;  h[2]=(i32)t2;  h[3]=(i32)t3;  h[4]=(i32)t4; \
     h[5]=(i32)t5;  h[6]=(i32)t6;  h[7]=(i32)t7;  h[8]=(i32)t8;  h[9]=(i32)t9
 
-static void fe_frombytes(fe h, const u8 s[32])
+
+void fe_frombytes(fe h, const u8 s[32])
 {
     i64 t0 =  load32_le(s);
     i64 t1 =  load24_le(s +  4) << 6;
@@ -1093,22 +1094,22 @@ static void fe_frombytes(fe h, const u8 s[32])
     i64 t7 =  load24_le(s + 23) << 5;
     i64 t8 =  load24_le(s + 26) << 4;
     i64 t9 = (load24_le(s + 29) & 0x7fffff) << 2;
-    FE_CARRY;
+    //FE_CARRY;
 }
 
 // multiply a field element by a signed 32-bit integer
-static void fe_mul_small(fe h, const fe f, i32 g)
+void fe_mul_small(fe h, const fe f, i32 g)
 {
     i64 t0 = f[0] * (i64) g;  i64 t1 = f[1] * (i64) g;
     i64 t2 = f[2] * (i64) g;  i64 t3 = f[3] * (i64) g;
     i64 t4 = f[4] * (i64) g;  i64 t5 = f[5] * (i64) g;
     i64 t6 = f[6] * (i64) g;  i64 t7 = f[7] * (i64) g;
     i64 t8 = f[8] * (i64) g;  i64 t9 = f[9] * (i64) g;
-    FE_CARRY;
+    //FE_CARRY;
 }
-static void fe_mul121666(fe h, const fe f) { fe_mul_small(h, f, 121666); }
+void fe_mul121666(fe h, const fe f) { fe_mul_small(h, f, 121666); }
 
-static void fe_mul(fe h, const fe f, const fe g)
+void fe_mul(fe h, const fe f, const fe g)
 {
     // Everything is unrolled and put in temporary variables.
     // We could roll the loop, but that would make curve25519 twice as slow.
@@ -1142,6 +1143,7 @@ static void fe_mul(fe h, const fe f, const fe g)
     i64 h9 = f0*(i64)g9 + f1*(i64)g8 + f2*(i64)g7 + f3*(i64)g6 + f4*(i64)g5
         +    f5*(i64)g4 + f6*(i64)g3 + f7*(i64)g2 + f8*(i64)g1 + f9*(i64)g0;
 
+
 #define CARRY                                                           \
     i64 c0, c1, c2, c3, c4, c5, c6, c7, c8, c9;                         \
     c0 = (h0 + ((i64)1<<25)) >> 26; h1 += c0;      h0 -= c0 * ((i64)1 << 26); \
@@ -1158,12 +1160,11 @@ static void fe_mul(fe h, const fe f, const fe g)
     c0 = (h0 + ((i64)1<<25)) >> 26; h1 += c0;      h0 -= c0 * ((i64)1 << 26); \
     h[0]=(i32)h0;  h[1]=(i32)h1;  h[2]=(i32)h2;  h[3]=(i32)h3;  h[4]=(i32)h4; \
     h[5]=(i32)h5;  h[6]=(i32)h6;  h[7]=(i32)h7;  h[8]=(i32)h8;  h[9]=(i32)h9
-
-    CARRY;
+    //CARRY;
 }
 
 // we could use fe_mul() for this, but this is significantly faster
-static void fe_sq(fe h, const fe f)
+void fe_sq(fe h, const fe f)
 {
     i32 f0 = f[0]; i32 f1 = f[1]; i32 f2 = f[2]; i32 f3 = f[3]; i32 f4 = f[4];
     i32 f5 = f[5]; i32 f6 = f[6]; i32 f7 = f[7]; i32 f8 = f[8]; i32 f9 = f[9];
@@ -1193,18 +1194,18 @@ static void fe_sq(fe h, const fe f)
     i64 h9 = f0_2*(i64)f9    + f1_2*(i64)f8    + f2_2*(i64)f7
         +    f3_2*(i64)f6    + f4  *(i64)f5_2;
 
-    CARRY;
+    //CARRY;
 }
 
 // h = 2 * (f^2)
-static void fe_sq2(fe h, const fe f)
+void fe_sq2(fe h, const fe f)
 {
     fe_sq(h, f);
     fe_mul_small(h, h, 2);
 }
 
 // This could be simplified, but it would be slower
-static void fe_pow22523(fe out, const fe z)
+void fe_pow22523(fe out, const fe z)
 {
     fe t0, t1, t2;
     fe_sq(t0, z);
@@ -1227,7 +1228,7 @@ static void fe_pow22523(fe out, const fe z)
 // Inverting means multiplying by 2^255 - 21
 // 2^255 - 21 = (2^252 - 3) * 8 + 3
 // So we reuse the multiplication chain of fe_pow22523
-static void fe_invert(fe out, const fe z)
+void fe_invert(fe out, const fe z)
 {
     fe tmp;
     fe_pow22523(tmp, z);
@@ -1238,7 +1239,7 @@ static void fe_invert(fe out, const fe z)
     WIPE_BUFFER(tmp);
 }
 
-static void fe_tobytes(u8 s[32], const fe h)
+void fe_tobytes(u8 s[32], const fe h)
 {
     i32 t[10];
     COPY(t, h, 10);
@@ -1267,7 +1268,7 @@ static void fe_tobytes(u8 s[32], const fe h)
 }
 
 //  Parity check.  Returns 0 if even, 1 if odd
-static int fe_isodd(const fe f)
+int fe_isodd(const fe f)
 {
     u8 s[32];
     fe_tobytes(s, f);
@@ -1277,7 +1278,7 @@ static int fe_isodd(const fe f)
 }
 
 // Returns 0 if zero, 1 if non zero
-static int fe_isnonzero(const fe f)
+int fe_isnonzero(const fe f)
 {
     u8 s[32];
     fe_tobytes(s, f);
@@ -1287,7 +1288,7 @@ static int fe_isnonzero(const fe f)
 }
 
 // Returns 1 if equal, 0 if not equal
-static int fe_isequal(const fe f, const fe g)
+int fe_isequal(const fe f, const fe g)
 {
     fe diff;
     fe_sub(diff, f, g);
@@ -1356,7 +1357,7 @@ static const fe sqrtm1 = { -32595792, -7943725, 9377950, 3500415, 12389472,
 //      x^((p-5)/8) * sqrt(-1) = sqrt( sqrt(-1)/x) * sqrt(-1)^2
 //      x^((p-5)/8) * sqrt(-1) = sqrt( sqrt(-1)/x) * -1
 //      x^((p-5)/8) * sqrt(-1) = -sqrt(sqrt(-1)/x) or sqrt(sqrt(-1)/x)
-static int invsqrt(fe isr, const fe x)
+int invsqrt(fe isr, const fe x)
 {
     fe check, quartic;
     fe_copy(check, x);
@@ -1374,7 +1375,7 @@ static int invsqrt(fe isr, const fe x)
 }
 
 // trim a scalar for scalar multiplication
-static void trim_scalar(u8 trimmed[32], const u8 scalar[32])
+void trim_scalar(u8 trimmed[32], const u8 scalar[32])
 {
     COPY(trimmed, scalar, 32);
     trimmed[ 0] &= 248;
@@ -1383,7 +1384,7 @@ static void trim_scalar(u8 trimmed[32], const u8 scalar[32])
 }
 
 // get bit from scalar at position i
-static int scalar_bit(const u8 s[32], int i)
+int scalar_bit(const u8 s[32], int i)
 {
     if (i < 0) { return 0; } // handle -1 for sliding windows
     return (s[i>>3] >> (i&7)) & 1;
@@ -1392,8 +1393,8 @@ static int scalar_bit(const u8 s[32], int i)
 ///////////////
 /// X-25519 /// Taken from SUPERCOP's ref10 implementation.
 ///////////////
-static void scalarmult(u8 q[32], const u8 scalar[32], const u8 p[32],
-                       size_t nb_bits)
+void scalarmult(u8 q[32], const u8 scalar[32], const u8 p[32],
+                      size_t nb_bits)
 {
     // computes the scalar product
     fe x1;
@@ -1478,7 +1479,7 @@ static const  u8 L[32] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, };
 
 // r = x mod L (little-endian)
-static void modL(u8 *r, i64 x[64])
+void modL(u8 *r, i64 x[64])
 {
     for (unsigned i = 63; i >= 32; i--) {
         i64 carry = 0;
@@ -1506,7 +1507,7 @@ static void modL(u8 *r, i64 x[64])
 }
 
 // Reduces a 64-byte hash modulo L (little endian)
-static void reduce(u8 r[64])
+void reduce(u8 r[64])
 {
     i64 x[64];
     COPY(x, r, 64);
@@ -1515,7 +1516,7 @@ static void reduce(u8 r[64])
 }
 
 // r = (a * b) + c
-static void mul_add(u8 r[32], const u8 a[32], const u8 b[32], const u8 c[32])
+void mul_add(u8 r[32], const u8 a[32], const u8 b[32], const u8 c[32])
 {
     i64 s[64];
     FOR (i, 0, 32) {
@@ -1532,7 +1533,7 @@ static void mul_add(u8 r[32], const u8 a[32], const u8 b[32], const u8 c[32])
 }
 
 // Variable time! a must not be secret!
-static int is_above_L(const u8 a[32])
+int is_above_L(const u8 a[32])
 {
     for (int i = 31; i >= 0; i--) {
         if (a[i] > L[i]) { return 1; }
@@ -2192,7 +2193,7 @@ void crypto_check_update(crypto_check_ctx_abstract *ctx,
 int crypto_check_final(crypto_check_ctx_abstract *ctx)
 {
     u8 h_ram[64];
-    ctx->hash->final(ctx, h_ram);
+    //ctx->hash->final(ctx, h_ram);
     reduce(h_ram);
     u8 *R       = ctx->buf;      // R
     u8 *s       = ctx->buf + 32; // s
