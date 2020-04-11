@@ -1046,20 +1046,6 @@ static void fe_ccopy(fe f, const fe g, int b)
     }
 }
 
-#define FE_CARRY                                                        \
-    i64 c0, c1, c2, c3, c4, c5, c6, c7, c8, c9;                         \
-    c9 = (t9 + (i64)(1<<24)) >> 25; t0 += c9 * 19; t9 -= c9 * (1 << 25); \
-    c1 = (t1 + (i64)(1<<24)) >> 25; t2 += c1;      t1 -= c1 * (1 << 25); \
-    c3 = (t3 + (i64)(1<<24)) >> 25; t4 += c3;      t3 -= c3 * (1 << 25); \
-    c5 = (t5 + (i64)(1<<24)) >> 25; t6 += c5;      t5 -= c5 * (1 << 25); \
-    c7 = (t7 + (i64)(1<<24)) >> 25; t8 += c7;      t7 -= c7 * (1 << 25); \
-    c0 = (t0 + (i64)(1<<25)) >> 26; t1 += c0;      t0 -= c0 * (1 << 26); \
-    c2 = (t2 + (i64)(1<<25)) >> 26; t3 += c2;      t2 -= c2 * (1 << 26); \
-    c4 = (t4 + (i64)(1<<25)) >> 26; t5 += c4;      t4 -= c4 * (1 << 26); \
-    c6 = (t6 + (i64)(1<<25)) >> 26; t7 += c6;      t6 -= c6 * (1 << 26); \
-    c8 = (t8 + (i64)(1<<25)) >> 26; t9 += c8;      t8 -= c8 * (1 << 26); \
-    h[0]=(i32)t0;  h[1]=(i32)t1;  h[2]=(i32)t2;  h[3]=(i32)t3;  h[4]=(i32)t4; \
-    h[5]=(i32)t5;  h[6]=(i32)t6;  h[7]=(i32)t7;  h[8]=(i32)t8;  h[9]=(i32)t9
 
 static void fe_frombytes(fe h, const u8 s[32])
 {
@@ -1073,7 +1059,7 @@ static void fe_frombytes(fe h, const u8 s[32])
     i64 t7 =  load24_le(s + 23) << 5;
     i64 t8 =  load24_le(s + 26) << 4;
     i64 t9 = (load24_le(s + 29) & 0x7fffff) << 2;
-    FE_CARRY;
+    //FE_CARRY;
 }
 
 static void fe_mul_small(fe h, const fe f, i32 g)
@@ -1083,7 +1069,7 @@ static void fe_mul_small(fe h, const fe f, i32 g)
     i64 t4 = f[4] * (i64) g;  i64 t5 = f[5] * (i64) g;
     i64 t6 = f[6] * (i64) g;  i64 t7 = f[7] * (i64) g;
     i64 t8 = f[8] * (i64) g;  i64 t9 = f[9] * (i64) g;
-    FE_CARRY;
+    //FE_CARRY;
 }
 static void fe_mul121666(fe h, const fe f) { fe_mul_small(h, f, 121666); }
 
@@ -1121,24 +1107,6 @@ static void fe_mul(fe h, const fe f, const fe g)
     i64 h9 = f0*(i64)g9 + f1*(i64)g8 + f2*(i64)g7 + f3*(i64)g6 + f4*(i64)g5
         +    f5*(i64)g4 + f6*(i64)g3 + f7*(i64)g2 + f8*(i64)g1 + f9*(i64)g0;
 
-#define CARRY                                                             \
-    i64 c0, c1, c2, c3, c4, c5, c6, c7, c8, c9;                           \
-    c0 = (h0 + (i64) (1<<25)) >> 26; h1 += c0;      h0 -= c0 * (1 << 26); \
-    c4 = (h4 + (i64) (1<<25)) >> 26; h5 += c4;      h4 -= c4 * (1 << 26); \
-    c1 = (h1 + (i64) (1<<24)) >> 25; h2 += c1;      h1 -= c1 * (1 << 25); \
-    c5 = (h5 + (i64) (1<<24)) >> 25; h6 += c5;      h5 -= c5 * (1 << 25); \
-    c2 = (h2 + (i64) (1<<25)) >> 26; h3 += c2;      h2 -= c2 * (1 << 26); \
-    c6 = (h6 + (i64) (1<<25)) >> 26; h7 += c6;      h6 -= c6 * (1 << 26); \
-    c3 = (h3 + (i64) (1<<24)) >> 25; h4 += c3;      h3 -= c3 * (1 << 25); \
-    c7 = (h7 + (i64) (1<<24)) >> 25; h8 += c7;      h7 -= c7 * (1 << 25); \
-    c4 = (h4 + (i64) (1<<25)) >> 26; h5 += c4;      h4 -= c4 * (1 << 26); \
-    c8 = (h8 + (i64) (1<<25)) >> 26; h9 += c8;      h8 -= c8 * (1 << 26); \
-    c9 = (h9 + (i64) (1<<24)) >> 25; h0 += c9 * 19; h9 -= c9 * (1 << 25); \
-    c0 = (h0 + (i64) (1<<25)) >> 26; h1 += c0;      h0 -= c0 * (1 << 26); \
-    h[0]=(i32)h0;  h[1]=(i32)h1;  h[2]=(i32)h2;  h[3]=(i32)h3;  h[4]=(i32)h4; \
-    h[5]=(i32)h5;  h[6]=(i32)h6;  h[7]=(i32)h7;  h[8]=(i32)h8;  h[9]=(i32)h9
-
-    CARRY;
 }
 
 // we could use fe_mul() for this, but this is significantly faster
@@ -1172,7 +1140,7 @@ static void fe_sq(fe h, const fe f)
     i64 h9 = f0_2*(i64)f9    + f1_2*(i64)f8    + f2_2*(i64)f7
         +    f3_2*(i64)f6    + f4  *(i64)f5_2;
 
-    CARRY;
+    //CARRY;
 }
 
 static void fe_sq2(fe h, const fe f)
