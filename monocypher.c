@@ -640,7 +640,7 @@ void crypto_blake2b_final(crypto_blake2b_ctx *ctx, u8 *hash)
         blake2b_set_input(ctx, 0, i);
     }
     blake2b_incr(ctx);        // update the input offset
-    blake2b_compress(ctx, 1); // compress the last block
+    //blake2b_compress(ctx, 1); // compress the last block
     size_t nb_words = ctx->hash_size >> 3;
     store64_le_buf(hash, ctx->hash, nb_words);
     FOR (i, nb_words << 3, ctx->hash_size) {
