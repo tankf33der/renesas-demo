@@ -1,4 +1,3 @@
-// Monocypher version __git__
 //
 // This file is dual-licensed.  Choose whichever licence you want from
 // the two licences listed below.
@@ -396,6 +395,7 @@ static void fe_ccopy(fe f, const fe g, int b)
     }
 }
 
+/*
 #define FE_CARRY                                                        \
     i64 c0, c1, c2, c3, c4, c5, c6, c7, c8, c9;                         \
     c9 = (t9 + (i64)(1<<24)) >> 25; t0 += c9 * 19; t9 -= c9 * (1 << 25); \
@@ -410,7 +410,7 @@ static void fe_ccopy(fe f, const fe g, int b)
     c8 = (t8 + (i64)(1<<25)) >> 26; t9 += c8;      t8 -= c8 * (1 << 26); \
     h[0]=(i32)t0;  h[1]=(i32)t1;  h[2]=(i32)t2;  h[3]=(i32)t3;  h[4]=(i32)t4; \
     h[5]=(i32)t5;  h[6]=(i32)t6;  h[7]=(i32)t7;  h[8]=(i32)t8;  h[9]=(i32)t9
-
+*/
 static void fe_frombytes(fe h, const u8 s[32])
 {
     i64 t0 =  load32_le(s);
@@ -423,7 +423,7 @@ static void fe_frombytes(fe h, const u8 s[32])
     i64 t7 =  load24_le(s + 23) << 5;
     i64 t8 =  load24_le(s + 26) << 4;
     i64 t9 = (load24_le(s + 29) & 0x7fffff) << 2;
-    FE_CARRY;
+    //FE_CARRY;
 }
 
 // multiply a field element by a signed 32-bit integer
@@ -434,8 +434,9 @@ static void fe_mul_small(fe h, const fe f, i32 g)
     i64 t4 = f[4] * (i64) g;  i64 t5 = f[5] * (i64) g;
     i64 t6 = f[6] * (i64) g;  i64 t7 = f[7] * (i64) g;
     i64 t8 = f[8] * (i64) g;  i64 t9 = f[9] * (i64) g;
-    FE_CARRY;
+    //FE_CARRY;
 }
+/*
 static void fe_mul(fe h, const fe f, const fe g)
 {
     // Everything is unrolled and put in temporary variables.
@@ -489,6 +490,7 @@ static void fe_mul(fe h, const fe f, const fe g)
 
     CARRY;
 }
+*/
 
 // we could use fe_mul() for this, but this is significantly faster
 static void fe_sq(fe h, const fe f)
@@ -521,7 +523,7 @@ static void fe_sq(fe h, const fe f)
     i64 h9 = f0_2*(i64)f9    + f1_2*(i64)f8    + f2_2*(i64)f7
         +    f3_2*(i64)f6    + f4  *(i64)f5_2;
 
-    CARRY;
+    //CARRY;
 }
 
 // h = 2 * (f^2)
@@ -531,38 +533,17 @@ static void fe_sq2(fe h, const fe f)
     fe_mul_small(h, h, 2);
 }
 
-// This could be simplified, but it would be slower
-static void fe_pow22523(fe out, const fe z)
-{
-    fe t0, t1, t2;
-    fe_sq(t0, z);
-    fe_sq(t1,t0);                   fe_sq(t1, t1);  fe_mul(t1, z, t1);
-    fe_mul(t0, t0, t1);
-    fe_sq(t0, t0);                                  fe_mul(t0, t1, t0);
-    fe_sq(t1, t0);  FOR (i, 1,   5) fe_sq(t1, t1);  fe_mul(t0, t1, t0);
-    fe_sq(t1, t0);  FOR (i, 1,  10) fe_sq(t1, t1);  fe_mul(t1, t1, t0);
-    fe_sq(t2, t1);  FOR (i, 1,  20) fe_sq(t2, t2);  fe_mul(t1, t2, t1);
-    fe_sq(t1, t1);  FOR (i, 1,  10) fe_sq(t1, t1);  fe_mul(t0, t1, t0);
-    fe_sq(t1, t0);  FOR (i, 1,  50) fe_sq(t1, t1);  fe_mul(t1, t1, t0);
-    fe_sq(t2, t1);  FOR (i, 1, 100) fe_sq(t2, t2);  fe_mul(t1, t2, t1);
-    fe_sq(t1, t1);  FOR (i, 1,  50) fe_sq(t1, t1);  fe_mul(t0, t1, t0);
-    fe_sq(t0, t0);  FOR (i, 1,   2) fe_sq(t0, t0);  fe_mul(out, t0, z);
-    WIPE_BUFFER(t0);
-    WIPE_BUFFER(t1);
-    WIPE_BUFFER(t2);
-}
-
 // Inverting means multiplying by 2^255 - 21
 // 2^255 - 21 = (2^252 - 3) * 8 + 3
 // So we reuse the multiplication chain of fe_pow22523
 static void fe_invert(fe out, const fe z)
 {
     fe tmp;
-    fe_pow22523(tmp, z);
+    //fe_pow22523(tmp, z);
     // tmp2^8 * z^3
     fe_sq(tmp, tmp);                        // 0
-    fe_sq(tmp, tmp);  fe_mul(tmp, tmp, z);  // 1
-    fe_sq(tmp, tmp);  fe_mul(out, tmp, z);  // 1
+    fe_sq(tmp, tmp);  //fe_mul(tmp, tmp, z);  // 1
+    fe_sq(tmp, tmp);  //fe_mul(out, tmp, z);  // 1
     WIPE_BUFFER(tmp);
 }
 
@@ -688,13 +669,13 @@ static int invsqrt(fe isr, const fe x)
 {
     fe check, quartic;
     fe_copy(check, x);
-    fe_pow22523(isr, check);
+    //fe_pow22523(isr, check);
     fe_sq (quartic, isr);
-    fe_mul(quartic, quartic, check);
+    //fe_mul(quartic, quartic, check);
     fe_1  (check);          int p1 = fe_isequal(quartic, check);
     fe_neg(check, check );  int m1 = fe_isequal(quartic, check);
     fe_neg(check, sqrtm1);  int ms = fe_isequal(quartic, check);
-    fe_mul(check, isr, sqrtm1);
+    //fe_mul(check, isr, sqrtm1);
     fe_ccopy(isr, check, m1 | ms);
     WIPE_BUFFER(quartic);
     WIPE_BUFFER(check);
@@ -814,8 +795,8 @@ static void ge_tobytes(u8 s[32], const ge *h)
 {
     fe recip, x, y;
     fe_invert(recip, h->Z);
-    fe_mul(x, h->X, recip);
-    fe_mul(y, h->Y, recip);
+    //fe_mul(x, h->X, recip);
+    //fe_mul(y, h->Y, recip);
     fe_tobytes(s, y);
     s[31] ^= fe_isodd(x) << 7;
 
@@ -860,19 +841,19 @@ static int ge_frombytes_vartime(ge *h, const u8 s[32])
     fe_frombytes(h->Y, s);
     fe_1(h->Z);
     fe_sq (h->T, h->Y);        // t =   y^2
-    fe_mul(h->X, h->T, d   );  // x = d*y^2
+    //fe_mul(h->X, h->T, d   );  // x = d*y^2
     fe_sub(h->T, h->T, h->Z);  // t =   y^2 - 1
     fe_add(h->X, h->X, h->Z);  // x = d*y^2 + 1
-    fe_mul(h->X, h->T, h->X);  // x = (y^2 - 1) * (d*y^2 + 1)
+    //fe_mul(h->X, h->T, h->X);  // x = (y^2 - 1) * (d*y^2 + 1)
     int is_square = invsqrt(h->X, h->X);
     if (!is_square) {
         return -1;             // Not on the curve, abort
     }
-    fe_mul(h->X, h->T, h->X);  // x = sqrt((y^2 - 1) / (d*y^2 + 1))
+    //fe_mul(h->X, h->T, h->X);  // x = sqrt((y^2 - 1) / (d*y^2 + 1))
     if (fe_isodd(h->X) != (s[31] >> 7)) {
         fe_neg(h->X, h->X);
     }
-    fe_mul(h->T, h->X, h->Y);
+    //fe_mul(h->T, h->X, h->Y);
     return 0;
 }
 
@@ -885,7 +866,7 @@ static void ge_cache(ge_cached *c, const ge *p)
     fe_add (c->Yp, p->Y, p->X);
     fe_sub (c->Ym, p->Y, p->X);
     fe_copy(c->Z , p->Z      );
-    fe_mul (c->T2, p->T, D2  );
+    //fe_mul (c->T2, p->T, D2  );
 }
 
 // Internal buffers are not wiped! Inputs must not be secret!
@@ -895,21 +876,21 @@ static void ge_add(ge *s, const ge *p, const ge_cached *q)
     fe a, b;
     fe_add(a   , p->Y, p->X );
     fe_sub(b   , p->Y, p->X );
-    fe_mul(a   , a   , q->Yp);
-    fe_mul(b   , b   , q->Ym);
+    //fe_mul(a   , a   , q->Yp);
+    //fe_mul(b   , b   , q->Ym);
     fe_add(s->Y, a   , b    );
     fe_sub(s->X, a   , b    );
 
     fe_add(s->Z, p->Z, p->Z );
-    fe_mul(s->Z, s->Z, q->Z );
-    fe_mul(s->T, p->T, q->T2);
+    //fe_mul(s->Z, s->Z, q->Z );
+    //fe_mul(s->T, p->T, q->T2);
     fe_add(a   , s->Z, s->T );
     fe_sub(b   , s->Z, s->T );
 
-    fe_mul(s->T, s->X, s->Y);
-    fe_mul(s->X, s->X, b   );
-    fe_mul(s->Y, s->Y, a   );
-    fe_mul(s->Z, a   , b   );
+    //fe_mul(s->T, s->X, s->Y);
+    //fe_mul(s->X, s->X, b   );
+    //fe_mul(s->Y, s->Y, a   );
+    //fe_mul(s->Z, a   , b   );
 }
 
 // Internal buffers are not wiped! Inputs must not be secret!
@@ -928,40 +909,40 @@ static void ge_madd(ge *s, const ge *p, const ge_precomp *q, fe a, fe b)
 {
     fe_add(a   , p->Y, p->X );
     fe_sub(b   , p->Y, p->X );
-    fe_mul(a   , a   , q->Yp);
-    fe_mul(b   , b   , q->Ym);
+    //fe_mul(a   , a   , q->Yp);
+    //fe_mul(b   , b   , q->Ym);
     fe_add(s->Y, a   , b    );
     fe_sub(s->X, a   , b    );
 
     fe_add(s->Z, p->Z, p->Z );
-    fe_mul(s->T, p->T, q->T2);
+    //fe_mul(s->T, p->T, q->T2);
     fe_add(a   , s->Z, s->T );
     fe_sub(b   , s->Z, s->T );
 
-    fe_mul(s->T, s->X, s->Y);
-    fe_mul(s->X, s->X, b   );
-    fe_mul(s->Y, s->Y, a   );
-    fe_mul(s->Z, a   , b   );
+    //fe_mul(s->T, s->X, s->Y);
+    //fe_mul(s->X, s->X, b   );
+    //fe_mul(s->Y, s->Y, a   );
+    //fe_mul(s->Z, a   , b   );
 }
 
 static void ge_msub(ge *s, const ge *p, const ge_precomp *q, fe a, fe b)
 {
     fe_add(a   , p->Y, p->X );
     fe_sub(b   , p->Y, p->X );
-    fe_mul(a   , a   , q->Ym);
-    fe_mul(b   , b   , q->Yp);
+    //fe_mul(a   , a   , q->Ym);
+    //fe_mul(b   , b   , q->Yp);
     fe_add(s->Y, a   , b    );
     fe_sub(s->X, a   , b    );
 
     fe_add(s->Z, p->Z, p->Z );
-    fe_mul(s->T, p->T, q->T2);
+    //fe_mul(s->T, p->T, q->T2);
     fe_sub(a   , s->Z, s->T );
     fe_add(b   , s->Z, s->T );
 
-    fe_mul(s->T, s->X, s->Y);
-    fe_mul(s->X, s->X, b   );
-    fe_mul(s->Y, s->Y, a   );
-    fe_mul(s->Z, a   , b   );
+    //fe_mul(s->T, s->X, s->Y);
+    //fe_mul(s->X, s->X, b   );
+    //fe_mul(s->Y, s->Y, a   );
+    //fe_mul(s->Z, a   , b   );
 }
 
 static void ge_double(ge *s, const ge *p, ge *q)
@@ -976,10 +957,10 @@ static void ge_double(ge *s, const ge *p, ge *q)
     fe_sub(q->X, s->T, q->T);
     fe_sub(q->Z, q->Z, q->Y);
 
-    fe_mul(s->X, q->X , q->Z);
-    fe_mul(s->Y, q->T , q->Y);
-    fe_mul(s->Z, q->Y , q->Z);
-    fe_mul(s->T, q->X , q->T);
+    //fe_mul(s->X, q->X , q->Z);
+    //fe_mul(s->Y, q->T , q->Y);
+    //fe_mul(s->Z, q->Y , q->Z);
+    //fe_mul(s->T, q->X , q->T);
 }
 
 // 5-bit signed window in cached format (Niels coordinates, Z=1)
