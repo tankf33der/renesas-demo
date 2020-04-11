@@ -550,11 +550,13 @@ static void blake2b_compress(crypto_blake2b_ctx *ctx, int is_last_block)
     BLAKE2_ROUND(8);  BLAKE2_ROUND(9);  BLAKE2_ROUND(0);  BLAKE2_ROUND(1);
 #endif
 
+/*
     // update hash
     ctx->hash[0] ^= v0 ^ v8;   ctx->hash[1] ^= v1 ^ v9;
     ctx->hash[2] ^= v2 ^ v10;  ctx->hash[3] ^= v3 ^ v11;
     ctx->hash[4] ^= v4 ^ v12;  ctx->hash[5] ^= v5 ^ v13;
     ctx->hash[6] ^= v6 ^ v14;  ctx->hash[7] ^= v7 ^ v15;
+*/
 }
 
 static void blake2b_set_input(crypto_blake2b_ctx *ctx, u8 input, size_t index)
