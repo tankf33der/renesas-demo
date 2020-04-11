@@ -1094,7 +1094,7 @@ void fe_frombytes(fe h, const u8 s[32])
     i64 t7 =  load24_le(s + 23) << 5;
     i64 t8 =  load24_le(s + 26) << 4;
     i64 t9 = (load24_le(s + 29) & 0x7fffff) << 2;
-    //FE_CARRY;
+    FE_CARRY;
 }
 
 // multiply a field element by a signed 32-bit integer
