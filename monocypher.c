@@ -2192,10 +2192,7 @@ void crypto_check_update(crypto_check_ctx_abstract *ctx,
 int crypto_check_final(crypto_check_ctx_abstract *ctx)
 {
     u8 h_ram[64];
-    //ctx->hash->final(ctx, h_ram);
-    void (*final)(void *, uint8_t[64]) = ctx->hash->final;
-    final(ctx, h_ram);
-
+    ctx->hash->final(ctx, h_ram);
     reduce(h_ram);
     u8 *R       = ctx->buf;      // R
     u8 *s       = ctx->buf + 32; // s
