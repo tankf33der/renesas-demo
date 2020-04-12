@@ -398,7 +398,7 @@ static void fe_ccopy(fe f, const fe g, int b)
 static void fe_carry(fe h, i64 t[10])
 {
     i64 c;
-    for (size_t i = 0; i < 4; i += 2) {
+    for (int i = 0; i < 4; i += 2) {
         c = (t[i+0]+((i64)1<<25))>>26; t[i+1] += c; t[i+0] -= c*((i64)1 << 26);
         c = (t[i+4]+((i64)1<<25))>>26; t[i+5] += c; t[i+4] -= c*((i64)1 << 26);
         c = (t[i+1]+((i64)1<<24))>>25; t[i+2] += c; t[i+1] -= c*((i64)1 << 25);
