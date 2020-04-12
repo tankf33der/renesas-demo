@@ -395,7 +395,7 @@ static void fe_ccopy(fe f, const fe g, int b)
     }
 }
 
-static void fe_carry(fe h, i64 t[10])
+void fe_carry(fe h, i64 t[10])
 {
     i64 c;
     for (size_t i = 0; i < 4; i += 2) {
@@ -411,7 +411,7 @@ static void fe_carry(fe h, i64 t[10])
     COPY(h, t, 10);
 }
 
-static void fe_frombytes(fe h, const u8 s[32])
+void fe_frombytes(fe h, const u8 s[32])
 {
     i64 t[10] = {
         load32_le(s),
@@ -429,7 +429,7 @@ static void fe_frombytes(fe h, const u8 s[32])
 }
 
 // multiply a field element by a signed 32-bit integer
-static void fe_mul_small(fe h, const fe f, i32 g)
+void fe_mul_small(fe h, const fe f, i32 g)
 {
     i64 t[10];
     FOR (i, 0, 10) {
@@ -439,7 +439,7 @@ static void fe_mul_small(fe h, const fe f, i32 g)
 }
 //static void fe_mul121666(fe h, const fe f) { fe_mul_small(h, f, 121666); }
 
-static void fe_mul(fe h, const fe f, const fe g)
+void fe_mul(fe h, const fe f, const fe g)
 {
     i32 G[9];
     FOR (i, 1, 10) {
