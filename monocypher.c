@@ -57,7 +57,7 @@
 /// Utilities ///
 /////////////////
 #define FOR_T(type, i, start, end) for (type i = (start); i < (end); i++)
-#define FOR(i, start, end)         FOR_T(size_t, i, start, end)
+#define FOR(i, start, end)         FOR_T(int, i, start, end)
 #define COPY(dst, src, size)       FOR(i, 0, size) (dst)[i] = (src)[i]
 #define ZERO(buf, size)            FOR(i, 0, size) (buf)[i] = 0
 #define WIPE_CTX(ctx)              crypto_wipe(ctx   , sizeof(*(ctx)))
@@ -398,16 +398,22 @@ static void fe_ccopy(fe f, const fe g, int b)
 static void fe_carry(fe h, i64 t[10])
 {
     i64 c;
+
+    i64 s24 = (i64)1<<24;
+    i64 s25 = (i64)1<<25;
+    i64 s26 = (i64)1<<26;
     for (int i = 0; i < 4; i += 2) {
-        c = (t[i+0]+((i64)1<<25))>>26; t[i+1] += c; t[i+0] -= c*((i64)1 << 26);
-        c = (t[i+4]+((i64)1<<25))>>26; t[i+5] += c; t[i+4] -= c*((i64)1 << 26);
-        c = (t[i+1]+((i64)1<<24))>>25; t[i+2] += c; t[i+1] -= c*((i64)1 << 25);
-        c = (t[i+5]+((i64)1<<24))>>25; t[i+6] += c; t[i+5] -= c*((i64)1 << 25);
+        c = (t[i+0]+s25)>>26; t[i+1] += c; t[i+0] -= c*s26;
+        c = (t[i+4]+s25)>>26; t[i+5] += c; t[i+4] -= c*s26;
+        c = (t[i+1]+s24)>>25; t[i+2] += c; t[i+1] -= c*s25;
+        c = (t[i+5]+s24)>>25; t[i+6] += c; t[i+5] -= c*s25;
     }
-    c = (t[4] + ((i64)1<<25)) >> 26; t[5] += c;      t[4] -= c * ((i64)1 << 26);
-    c = (t[8] + ((i64)1<<25)) >> 26; t[9] += c;      t[8] -= c * ((i64)1 << 26);
-    c = (t[9] + ((i64)1<<24)) >> 25; t[0] += c * 19; t[9] -= c * ((i64)1 << 25);
-    c = (t[0] + ((i64)1<<25)) >> 26; t[1] += c;      t[0] -= c * ((i64)1 << 26);
+    /*
+    c = (t[4] + s25) >> 26; t[5] += c;      t[4] -= c * s26;
+    c = (t[8] + s25) >> 26; t[9] += c;      t[8] -= c * s26;
+    c = (t[9] + s24) >> 25; t[0] += c * 19; t[9] -= c * s25;
+    c = (t[0] + s25) >> 26; t[1] += c;      t[0] -= c * s26;
+    */
     COPY(h, t, 10);
 }
 
